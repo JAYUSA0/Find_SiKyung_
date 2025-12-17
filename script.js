@@ -134,18 +134,31 @@ function render() {
  ***************/
 function addCellEvents(cell, r, c) {
   // 모바일 터치
-  let pressTimer, longPress=false;
-  cell.addEventListener('pointerdown', e => {
-    if(e.pointerType!=='touch') return;
-    longPress=false;
-    pressTimer = setTimeout(()=>{ longPress=true; toggleFlag(r,c); }, 300);
-  });
-  cell.addEventListener('pointerup', e => {
-    if(e.pointerType!=='touch') return;
-    clearTimeout(pressTimer);
-    if(!longPress) openCell(r,c);
-  });
-  cell.addEventListener('pointercancel', e => { clearTimeout(pressTimer); });
+ let pressTimer;
+let longPressHandled = false; // ⭐ 새 플래그 추가
+
+cell.addEventListener('pointerdown', e => {
+  if(e.pointerType !== 'touch') return;
+  longPressHandled = false; // 초기화
+
+  // 0.5초 이상 누르면 깃발 설치
+  pressTimer = setTimeout(() => {
+    longPressHandled = true; // 이미 longPress 처리됨
+    toggleFlag(r, c);
+  }, 500); // 길게 누르는 시간 500ms
+});
+
+cell.addEventListener('pointerup', e => {
+  if(e.pointerType !== 'touch') return;
+  clearTimeout(pressTimer);
+
+  // 길게 눌러 깃발 설치했으면 셀 열기 막기
+  if(!longPressHandled) openCell(r, c);
+});
+
+cell.addEventListener('pointercancel', e => {
+  clearTimeout(pressTimer);
+});
 
   // PC 마우스 이벤트
   let bothPressed=false;
